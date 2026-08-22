@@ -1,0 +1,272 @@
+[
+  {
+    "id": "soc_analyst",
+    "name": "SOC Analyst",
+    "category": "Cybersecurity",
+    "description": "Monitors security events and responds to cyber threats.",
+    "required_skills": {"networking": 8, "linux": 7, "cybersecurity": 8, "siem": 9, "incident_response": 8, "python": 5},
+    "interests": ["cybersecurity", "networking", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "penetration_tester",
+    "name": "Penetration Tester",
+    "category": "Cybersecurity",
+    "description": "Tests systems and applications to identify exploitable security weaknesses.",
+    "required_skills": {"networking": 8, "linux": 8, "cybersecurity": 8, "penetration_testing": 9, "vulnerability_assessment": 8, "ethical_hacking": 9, "python": 6},
+    "interests": ["cybersecurity", "ethical_hacking", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "security_engineer",
+    "name": "Security Engineer",
+    "category": "Cybersecurity",
+    "description": "Designs and implements security controls for systems and infrastructure.",
+    "required_skills": {"cybersecurity": 9, "network_security": 8, "security_engineering": 9, "identity_access_management": 7, "cloud": 6, "linux": 7},
+    "interests": ["cybersecurity", "system_design", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "digital_forensics_analyst",
+    "name": "Digital Forensics Analyst",
+    "category": "Cybersecurity",
+    "description": "Collects and analyzes digital evidence during security investigations.",
+    "required_skills": {"digital_forensics": 9, "incident_response": 8, "malware_analysis": 7, "linux": 7, "cybersecurity": 8, "python": 5},
+    "interests": ["cybersecurity", "investigation", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "grc_analyst",
+    "name": "GRC Analyst",
+    "category": "Cybersecurity",
+    "description": "Evaluates security risks, governance controls and regulatory compliance.",
+    "required_skills": {"risk_management": 9, "compliance": 9, "cybersecurity": 7, "communication": 7, "business_analysis": 6},
+    "interests": ["cybersecurity", "governance", "analysis"],
+    "target_projects": 2
+  },
+  {
+    "id": "network_engineer",
+    "name": "Network Engineer",
+    "category": "Network and Systems",
+    "description": "Designs, configures and maintains computer networks.",
+    "required_skills": {"networking": 9, "linux": 6, "routing_switching": 9, "network_security": 7, "cloud": 5, "python": 4},
+    "interests": ["networking", "infrastructure", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "system_administrator",
+    "name": "System Administrator",
+    "category": "Network and Systems",
+    "description": "Maintains servers, operating systems and enterprise IT services.",
+    "required_skills": {"system_administration": 9, "linux": 8, "windows_server": 8, "networking": 7, "virtualization": 7, "troubleshooting": 8, "python": 4},
+    "interests": ["systems", "infrastructure", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "network_administrator",
+    "name": "Network Administrator",
+    "category": "Network and Systems",
+    "description": "Operates network devices, connectivity services and access controls.",
+    "required_skills": {"networking": 8, "routing_switching": 8, "network_security": 6, "system_administration": 6, "troubleshooting": 8},
+    "interests": ["networking", "infrastructure", "technical_support"],
+    "target_projects": 2
+  },
+  {
+    "id": "it_support_specialist",
+    "name": "IT Support Specialist",
+    "category": "Network and Systems",
+    "description": "Diagnoses user, device, software and connectivity problems.",
+    "required_skills": {"technical_support": 9, "troubleshooting": 9, "windows_server": 6, "networking": 6, "linux": 5, "communication": 8},
+    "interests": ["technical_support", "communication", "problem_solving"],
+    "target_projects": 1
+  },
+  {
+    "id": "systems_engineer",
+    "name": "Systems Engineer",
+    "category": "Network and Systems",
+    "description": "Designs integrated server, network and virtualization environments.",
+    "required_skills": {"system_administration": 8, "networking": 7, "linux": 8, "windows_server": 7, "virtualization": 8, "cloud": 6, "python": 5},
+    "interests": ["systems", "automation", "infrastructure"],
+    "target_projects": 3
+  },
+  {
+    "id": "backend_developer",
+    "name": "Backend Developer",
+    "category": "Software Development",
+    "description": "Develops server-side applications, APIs and databases.",
+    "required_skills": {"python": 9, "sql": 7, "apis": 8, "databases": 8, "web_development": 7, "linux": 5, "docker": 5},
+    "interests": ["programming", "backend_development", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "frontend_developer",
+    "name": "Frontend Developer",
+    "category": "Software Development",
+    "description": "Builds interactive and accessible web user interfaces.",
+    "required_skills": {"javascript": 9, "html_css": 9, "frontend_frameworks": 8, "web_development": 8, "apis": 5, "ui_ux_design": 5},
+    "interests": ["programming", "design", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "full_stack_developer",
+    "name": "Full Stack Developer",
+    "category": "Software Development",
+    "description": "Develops both client-side and server-side web application components.",
+    "required_skills": {"python": 8, "javascript": 8, "html_css": 7, "frontend_frameworks": 8, "web_development": 8, "apis": 8, "databases": 7},
+    "interests": ["programming", "web_development", "problem_solving"],
+    "target_projects": 4
+  },
+  {
+    "id": "mobile_app_developer",
+    "name": "Mobile App Developer",
+    "category": "Software Development",
+    "description": "Creates applications for mobile devices and integrates backend services.",
+    "required_skills": {"mobile_development": 9, "javascript": 7, "apis": 7, "databases": 6, "software_testing": 6, "ui_ux_design": 6},
+    "interests": ["programming", "mobile_development", "design"],
+    "target_projects": 3
+  },
+  {
+    "id": "qa_automation_engineer",
+    "name": "QA Automation Engineer",
+    "category": "Software Development",
+    "description": "Designs automated tests to improve software quality and release reliability.",
+    "required_skills": {"software_testing": 9, "test_automation": 9, "python": 8, "apis": 6, "ci_cd": 6},
+    "interests": ["quality", "automation", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "data_analyst",
+    "name": "Data Analyst",
+    "category": "AI and Data",
+    "description": "Analyzes data and presents insights for decision-making.",
+    "required_skills": {"python": 7, "sql": 8, "statistics": 8, "data_visualization": 8, "excel": 7},
+    "interests": ["data", "analysis", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "data_scientist",
+    "name": "Data Scientist",
+    "category": "AI and Data",
+    "description": "Uses statistics and machine learning to discover patterns and build predictive models.",
+    "required_skills": {"python": 9, "statistics": 9, "machine_learning": 8, "sql": 7, "data_visualization": 7, "deep_learning": 6},
+    "interests": ["data", "analysis", "research"],
+    "target_projects": 4
+  },
+  {
+    "id": "machine_learning_engineer",
+    "name": "Machine Learning Engineer",
+    "category": "AI and Data",
+    "description": "Builds, deploys and maintains production machine learning systems.",
+    "required_skills": {"python": 9, "machine_learning": 9, "deep_learning": 8, "data_engineering": 7, "docker": 6, "cloud": 6},
+    "interests": ["artificial_intelligence", "programming", "problem_solving"],
+    "target_projects": 4
+  },
+  {
+    "id": "data_engineer",
+    "name": "Data Engineer",
+    "category": "AI and Data",
+    "description": "Builds reliable pipelines and platforms for collecting and processing data.",
+    "required_skills": {"python": 8, "sql": 9, "data_engineering": 9, "etl": 9, "big_data": 8, "cloud": 7},
+    "interests": ["data", "infrastructure", "automation"],
+    "target_projects": 3
+  },
+  {
+    "id": "business_intelligence_analyst",
+    "name": "Business Intelligence Analyst",
+    "category": "AI and Data",
+    "description": "Creates dashboards and analytical reports that support business decisions.",
+    "required_skills": {"business_intelligence": 9, "sql": 8, "excel": 8, "data_visualization": 8, "business_analysis": 7, "statistics": 6},
+    "interests": ["data", "business", "analysis"],
+    "target_projects": 2
+  },
+  {
+    "id": "cloud_engineer",
+    "name": "Cloud Engineer",
+    "category": "Cloud and DevOps",
+    "description": "Builds and maintains cloud infrastructure and services.",
+    "required_skills": {"cloud": 9, "aws": 8, "linux": 8, "networking": 7, "docker": 7, "python": 5},
+    "interests": ["cloud_computing", "automation", "infrastructure"],
+    "target_projects": 3
+  },
+  {
+    "id": "devops_engineer",
+    "name": "DevOps Engineer",
+    "category": "Cloud and DevOps",
+    "description": "Automates software delivery and infrastructure operations.",
+    "required_skills": {"devops": 9, "linux": 8, "docker": 8, "ci_cd": 9, "cloud": 8, "python": 7, "infrastructure_as_code": 8},
+    "interests": ["automation", "cloud_computing", "infrastructure"],
+    "target_projects": 3
+  },
+  {
+    "id": "site_reliability_engineer",
+    "name": "Site Reliability Engineer",
+    "category": "Cloud and DevOps",
+    "description": "Improves the reliability, scalability and observability of production services.",
+    "required_skills": {"linux": 9, "monitoring": 9, "cloud": 8, "kubernetes": 8, "python": 7, "networking": 7, "incident_response": 7},
+    "interests": ["reliability", "automation", "problem_solving"],
+    "target_projects": 4
+  },
+  {
+    "id": "platform_engineer",
+    "name": "Platform Engineer",
+    "category": "Cloud and DevOps",
+    "description": "Builds internal platforms that simplify application delivery and operations.",
+    "required_skills": {"kubernetes": 9, "cloud": 8, "devops": 8, "infrastructure_as_code": 9, "docker": 8, "ci_cd": 7},
+    "interests": ["infrastructure", "automation", "cloud_computing"],
+    "target_projects": 4
+  },
+  {
+    "id": "database_administrator",
+    "name": "Database Administrator",
+    "category": "Database",
+    "description": "Secures, maintains and optimizes organizational database systems.",
+    "required_skills": {"database_administration": 9, "sql": 9, "databases": 9, "performance_tuning": 8, "linux": 6},
+    "interests": ["databases", "systems", "problem_solving"],
+    "target_projects": 2
+  },
+  {
+    "id": "database_developer",
+    "name": "Database Developer",
+    "category": "Database",
+    "description": "Designs database structures, queries and data-access components.",
+    "required_skills": {"sql": 9, "databases": 9, "python": 6, "apis": 6, "performance_tuning": 7},
+    "interests": ["databases", "programming", "problem_solving"],
+    "target_projects": 3
+  },
+  {
+    "id": "ui_ux_designer",
+    "name": "UI/UX Designer",
+    "category": "UI/UX",
+    "description": "Designs usable interfaces and cohesive digital product experiences.",
+    "required_skills": {"ui_ux_design": 9, "prototyping": 9, "user_research": 7, "html_css": 5, "data_visualization": 4, "communication": 7},
+    "interests": ["design", "creativity", "user_experience"],
+    "target_projects": 3
+  },
+  {
+    "id": "ux_researcher",
+    "name": "UX Researcher",
+    "category": "UI/UX",
+    "description": "Studies user behavior and turns research findings into product guidance.",
+    "required_skills": {"user_research": 9, "ui_ux_design": 7, "prototyping": 6, "statistics": 6, "business_analysis": 6, "communication": 8},
+    "interests": ["research", "user_experience", "design"],
+    "target_projects": 2
+  },
+  {
+    "id": "it_project_manager",
+    "name": "IT Project Manager",
+    "category": "IT Management",
+    "description": "Plans and coordinates technology projects, teams, budgets and delivery risks.",
+    "required_skills": {"project_management": 9, "communication": 9, "leadership": 8, "business_analysis": 7, "it_service_management": 6},
+    "interests": ["management", "planning", "leadership"],
+    "target_projects": 3
+  },
+  {
+    "id": "it_business_analyst",
+    "name": "IT Business Analyst",
+    "category": "IT Management",
+    "description": "Translates business requirements into practical technology solutions.",
+    "required_skills": {"business_analysis": 9, "communication": 9, "project_management": 7, "sql": 5, "data_visualization": 6},
+    "interests": ["business", "analysis", "problem_solving"],
+    "target_projects": 2
+  }
+]
