@@ -53,6 +53,10 @@ def authenticated_app(tmp_path, monkeypatch):
 
     app = create_app()
     find_by_label(
+        app.button,
+        "Sign In",
+    ).click().run(timeout=30)
+    find_by_label(
         app.text_input,
         "Username",
     ).set_value("test_user")
@@ -85,7 +89,7 @@ def return_to_dashboard(app):
         assert not app.exception
 
 
-def test_login_screen_is_initial_page(tmp_path, monkeypatch):
+def test_landing_screen_is_initial_page(tmp_path, monkeypatch):
     database_path = tmp_path / "careerforge.db"
     monkeypatch.setenv(
         "CAREERFORGE_DB_PATH",
@@ -95,22 +99,62 @@ def test_login_screen_is_initial_page(tmp_path, monkeypatch):
     app = create_app()
 
     assert not app.exception
-    assert app.title[0].value == "CareerForge"
-    assert app.subheader[0].value == "Login"
-
-    input_labels = {
-        item.label
-        for item in app.text_input
-    }
     button_labels = {
         item.label
         for item in app.button
     }
 
-    assert {"Username", "Password"}.issubset(input_labels)
-    assert {"Login", "Create an Account"}.issubset(
+    assert {
+        "Start My Career Plan",
+        "Sign In",
+    }.issubset(
         button_labels
     )
+
+
+def test_sign_in_opens_login_screen(tmp_path, monkeypatch):
+    database_path = tmp_path / "careerforge.db"
+    monkeypatch.setenv(
+        "CAREERFORGE_DB_PATH",
+        str(database_path),
+    )
+
+    app = create_app()
+    find_by_label(app.button, "Sign In").click().run(timeout=30)
+
+    assert not app.exception
+    assert app.title[0].value == "CareerForge"
+    assert app.subheader[0].value == "Login"
+
+    input_labels = {item.label for item in app.text_input}
+    assert {"Username", "Password"}.issubset(input_labels)
+    assert "← Back to Home" in {
+        item.label
+        for item in app.button
+    }
+
+
+def test_login_can_return_to_landing_page(tmp_path, monkeypatch):
+    """Allow an unauthenticated user to return home from login."""
+
+    database_path = tmp_path / "careerforge.db"
+    monkeypatch.setenv(
+        "CAREERFORGE_DB_PATH",
+        str(database_path),
+    )
+
+    app = create_app()
+    find_by_label(app.button, "Sign In").click().run(timeout=30)
+    find_by_label(
+        app.button,
+        "← Back to Home",
+    ).click().run(timeout=30)
+
+    assert not app.exception
+    assert "Start My Career Plan" in {
+        item.label
+        for item in app.button
+    }
 
 
 def test_register_screen_renders(tmp_path, monkeypatch):
@@ -123,7 +167,7 @@ def test_register_screen_renders(tmp_path, monkeypatch):
     app = create_app()
     find_by_label(
         app.button,
-        "Create an Account",
+        "Start My Career Plan",
     ).click().run(timeout=30)
 
     assert not app.exception
@@ -138,6 +182,43 @@ def test_register_screen_renders(tmp_path, monkeypatch):
         "Password",
         "Confirm password",
     }.issubset(input_labels)
+
+
+def test_landing_page_uses_full_width_layout():
+    """Keep the public landing page wide without changing app pages."""
+
+    source = APP_PATH.read_text(encoding="utf-8")
+
+    assert ".block-container {" in source
+    assert "max-width: none;" in source
+    assert "width: 100%;" in source
+    assert "apply_landing_styles()\n            render_landing_page()" in source
+
+
+def test_non_landing_background_assets_exist():
+    """Provide a dedicated optimized background for every app page."""
+
+    background_directory = PROJECT_ROOT / "assets" / "backgrounds"
+    expected_files = {
+        "login.webp",
+        "register.webp",
+        "dashboard.webp",
+        "overview.webp",
+        "skill-gap.webp",
+        "learning-roadmap.webp",
+        "what-if.webp",
+        "comparison.webp",
+        "progress.webp",
+    }
+
+    assert expected_files == {
+        path.name
+        for path in background_directory.glob("*.webp")
+    }
+    assert all(
+        (background_directory / name).stat().st_size > 0
+        for name in expected_files
+    )
 
 
 def test_authenticated_dashboard_has_six_cards(
@@ -209,7 +290,7 @@ def test_feature_card_opens_separate_screen(
     }
 
 
-def test_logout_returns_to_login(authenticated_app):
+def test_logout_returns_to_landing_page(authenticated_app):
     app = authenticated_app
 
     find_by_label(
@@ -218,4 +299,7 @@ def test_logout_returns_to_login(authenticated_app):
     ).click().run(timeout=30)
 
     assert not app.exception
-    assert app.subheader[0].value == "Login"
+    assert "Sign In" in {
+        item.label
+        for item in app.button
+    }
