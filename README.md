@@ -7,6 +7,9 @@ supports account-based profiles.
 
 ## Main features
 
+- Full-width responsive public landing page
+- Original login, dashboard, sidebar, and six feature-page UI preserved
+- Dedicated low-contrast background artwork for authentication and app pages
 - Career recommendation with cosine similarity and weighted scoring
 - Skill-gap and readiness analysis
 - Prerequisite-aware learning paths

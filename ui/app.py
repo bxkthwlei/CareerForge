@@ -1,5 +1,6 @@
-"""Streamlit dashboard for CareerForge."""
+"""Streamlit dashboard for CareerForge with a public landing page."""
 
+import base64
 import copy
 import html
 import json
@@ -42,7 +43,24 @@ DATABASE_PATH = (
 )
 CAREERS_PATH = PROJECT_ROOT / "data" / "careers.json"
 SKILLS_PATH = PROJECT_ROOT / "data" / "skills.json"
+HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "hero-career-path.webp"
+BACKGROUND_PATH = PROJECT_ROOT / "assets" / "backgrounds"
 CAREER_COUNT = 30
+
+AUTH_BACKGROUND_PATHS = {
+    "login": BACKGROUND_PATH / "login.webp",
+    "register": BACKGROUND_PATH / "register.webp",
+}
+
+PAGE_BACKGROUND_PATHS = {
+    "dashboard": BACKGROUND_PATH / "dashboard.webp",
+    "overview": BACKGROUND_PATH / "overview.webp",
+    "skill_gap": BACKGROUND_PATH / "skill-gap.webp",
+    "learning": BACKGROUND_PATH / "learning-roadmap.webp",
+    "what_if": BACKGROUND_PATH / "what-if.webp",
+    "compare": BACKGROUND_PATH / "comparison.webp",
+    "progress": BACKGROUND_PATH / "progress.webp",
+}
 
 FEATURE_PAGES = {
     "overview": {
@@ -135,6 +153,55 @@ def readable_name(identifier):
     return identifier.replace("_", " ").title()
 
 
+def image_data_uri(path):
+    """Return a local image as an embeddable data URI."""
+
+    image_bytes = path.read_bytes()
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    media_type = "image/webp" if path.suffix == ".webp" else "image/png"
+    return f"data:{media_type};base64,{encoded}"
+
+
+def apply_page_background(image_path, *, authentication=False):
+    """Apply a readable image background to one non-landing page."""
+
+    background_image = image_data_uri(image_path)
+    overlay = "0.78" if authentication else "0.86"
+    form_style = """
+        [data-testid="stForm"] {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+        }
+    """ if authentication else ""
+
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stAppViewContainer"] {{
+            background-image:
+                linear-gradient(
+                    rgba(248, 250, 252, {overlay}),
+                    rgba(238, 242, 255, {overlay})
+                ),
+                url('{background_image}');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }}
+
+        [data-testid="stHeader"] {{
+            background: rgba(248, 250, 252, 0.70);
+            backdrop-filter: blur(12px);
+        }}
+
+        {form_style}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def apply_custom_styles():
     """Apply the CareerForge visual theme."""
 
@@ -151,7 +218,7 @@ def apply_custom_styles():
             background-image:
                 radial-gradient(
                     circle at 92% 4%,
-                    rgba(99, 102, 241, 0.08),
+                    rgba(56, 189, 248, 0.08),
                     transparent 24rem
                 ),
                 radial-gradient(
@@ -162,10 +229,10 @@ def apply_custom_styles():
         }
 
         [data-testid="stSidebar"] {
-            border-right: 1px solid rgba(99, 102, 241, 0.18);
+            border-right: 1px solid rgba(56, 189, 248, 0.18);
             background: linear-gradient(
                 180deg,
-                rgba(99, 102, 241, 0.08) 0%,
+                rgba(56, 189, 248, 0.08) 0%,
                 rgba(14, 165, 233, 0.04) 100%
             );
         }
@@ -181,11 +248,11 @@ def apply_custom_styles():
         [data-testid="stMetric"] {
             min-height: 126px;
             padding: 1.15rem 1.25rem;
-            border: 1px solid rgba(99, 102, 241, 0.20);
+            border: 1px solid rgba(56, 189, 248, 0.20);
             border-radius: 16px;
             background: linear-gradient(
                 145deg,
-                rgba(99, 102, 241, 0.10),
+                rgba(56, 189, 248, 0.10),
                 rgba(14, 165, 233, 0.05)
             );
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
@@ -196,11 +263,11 @@ def apply_custom_styles():
         }
 
         [data-testid="stVerticalBlockBorderWrapper"] {
-            border: 1px solid rgba(99, 102, 241, 0.20) !important;
+            border: 1px solid rgba(56, 189, 248, 0.20) !important;
             border-radius: 18px !important;
             background: linear-gradient(
                 145deg,
-                rgba(99, 102, 241, 0.08),
+                rgba(56, 189, 248, 0.08),
                 rgba(14, 165, 233, 0.035)
             );
             box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
@@ -215,7 +282,7 @@ def apply_custom_styles():
         [data-testid="stForm"] {
             padding: 1.35rem;
             border-radius: 16px;
-            border-color: rgba(99, 102, 241, 0.22);
+            border-color: rgba(56, 189, 248, 0.22);
             box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
         }
 
@@ -223,7 +290,7 @@ def apply_custom_styles():
         [data-testid="stFormSubmitButton"] > button {
             min-height: 2.7rem;
             border-radius: 10px;
-            border-color: rgba(99, 102, 241, 0.38);
+            border-color: rgba(56, 189, 248, 0.38);
             font-weight: 650;
             transition: transform 150ms ease, box-shadow 150ms ease;
         }
@@ -231,26 +298,26 @@ def apply_custom_styles():
         .stButton > button:hover,
         [data-testid="stFormSubmitButton"] > button:hover {
             transform: translateY(-1px);
-            border-color: rgb(99, 102, 241);
-            box-shadow: 0 8px 18px rgba(79, 70, 229, 0.18);
+            border-color: rgb(56, 189, 248);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.20);
         }
 
         .stButton > button[kind="primary"] {
             color: white;
             border: 0;
-            background: linear-gradient(120deg, #4f46e5, #2563eb);
-            box-shadow: 0 9px 22px rgba(37, 99, 235, 0.25);
+            background: linear-gradient(120deg, #2563eb, #38bdf8);
+            box-shadow: 0 9px 22px rgba(37, 99, 235, 0.28);
         }
 
         .stButton > button[kind="primary"]:hover {
             color: white;
             border: 0;
-            background: linear-gradient(120deg, #4338ca, #1d4ed8);
+            background: linear-gradient(120deg, #1d4ed8, #0369a1);
             box-shadow: 0 12px 26px rgba(37, 99, 235, 0.32);
         }
 
         [data-testid="stDataFrame"] {
-            border: 1px solid rgba(99, 102, 241, 0.16);
+            border: 1px solid rgba(56, 189, 248, 0.16);
             border-radius: 14px;
             overflow: hidden;
         }
@@ -260,8 +327,8 @@ def apply_custom_styles():
             margin-bottom: 1.5rem;
             color: white;
             border-radius: 20px;
-            background: linear-gradient(125deg, #4338ca, #2563eb 55%, #0891b2);
-            box-shadow: 0 18px 42px rgba(37, 99, 235, 0.22);
+            background: linear-gradient(125deg, #1e40af, #2563eb 55%, #0891b2);
+            box-shadow: 0 18px 42px rgba(37, 99, 235, 0.24);
         }
 
         .cf-hero h1 {
@@ -293,8 +360,8 @@ def apply_custom_styles():
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: 20px;
-            background: linear-gradient(125deg, #312e81, #4f46e5 52%, #0284c7);
-            box-shadow: 0 18px 42px rgba(49, 46, 129, 0.22);
+            background: linear-gradient(125deg, #0b1f4d, #1d4ed8 52%, #0369a1);
+            box-shadow: 0 18px 42px rgba(6, 78, 59, 0.20);
         }
 
         .cf-feature-hero::after {
@@ -347,7 +414,7 @@ def apply_custom_styles():
 
         .cf-back-label {
             margin-bottom: 0.35rem;
-            color: #64748b;
+            color: #5f756c;
             font-size: 0.78rem;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -357,9 +424,9 @@ def apply_custom_styles():
         .cf-sidebar-user {
             padding: 0.85rem 1rem;
             margin: 0.4rem 0 1rem 0;
-            border: 1px solid rgba(99, 102, 241, 0.20);
+            border: 1px solid rgba(56, 189, 248, 0.20);
             border-radius: 13px;
-            background: rgba(99, 102, 241, 0.08);
+            background: rgba(56, 189, 248, 0.08);
         }
 
         .cf-sidebar-user small {
@@ -377,6 +444,370 @@ def apply_custom_styles():
     )
 
 
+def apply_workspace_styles():
+    """Apply the restrained SaaS theme outside the landing page."""
+
+    st.markdown(
+        """
+        <style>
+        :root { --cf-ink:#e6f4ff; --cf-muted:#8fafc8; --cf-line:#1b365d; --cf-blue:#38bdf8; }
+        [data-testid="stAppViewContainer"] { background:#050b18; }
+        [data-testid="stHeader"] { background:rgba(5,11,24,.90); backdrop-filter:blur(12px); }
+        .block-container { width:100%; max-width:1480px; padding:2.2rem clamp(1rem,2.6vw,2.75rem) 4rem; }
+        [data-testid="stSidebar"] { background:#071226; border-right:1px solid var(--cf-line); }
+        [data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top:1.2rem; }
+        h1,h2,h3 { color:var(--cf-ink); letter-spacing:-.035em; }
+        p,[data-testid="stCaptionContainer"] { color:var(--cf-muted); }
+        [data-testid="stMetric"] { min-height:116px; padding:1.15rem 1.2rem; background:rgba(11,23,48,.88); border:1px solid var(--cf-line); border-radius:12px; box-shadow:0 10px 28px rgba(0,0,0,.20); backdrop-filter:blur(14px); }
+        [data-testid="stVerticalBlockBorderWrapper"] { background:rgba(11,23,48,.82)!important; border:1px solid var(--cf-line)!important; border-radius:14px!important; box-shadow:0 10px 28px rgba(0,0,0,.18); backdrop-filter:blur(14px); transition:border-color 160ms ease,box-shadow 160ms ease; }
+        [data-testid="stVerticalBlockBorderWrapper"]:hover { transform:none; border-color:#38bdf8!important; box-shadow:0 12px 30px rgba(56,189,248,.14); }
+        [data-testid="stForm"] { padding:1.5rem; background:rgba(11,23,48,.86); border:1px solid var(--cf-line); border-radius:14px; box-shadow:0 12px 30px rgba(0,0,0,.16); backdrop-filter:blur(14px); }
+        .stButton>button,[data-testid="stFormSubmitButton"]>button { min-height:2.75rem; border:1px solid #244b75; border-radius:8px; background:#0e2140; color:#e6f4ff; font-weight:650; box-shadow:none; }
+        .stButton>button:hover,[data-testid="stFormSubmitButton"]>button:hover { transform:none; border-color:#7dd3fc; color:#7dd3fc; box-shadow:0 4px 14px rgba(56,189,248,.18); }
+        .stButton>button[kind="primary"],[data-testid="stFormSubmitButton"]>button[kind="primary"] { border:1px solid var(--cf-blue); background:var(--cf-blue); color:#030b1a; box-shadow:none; }
+        [data-testid="stDataFrame"] { overflow:hidden; background:#0b1730; border:1px solid var(--cf-line); border-radius:12px; }
+        .cf-auth-brand { margin-bottom:2.2rem; }
+        .cf-auth-brand strong { display:block; color:var(--cf-ink); font-size:1.22rem; letter-spacing:-.03em; }
+        .cf-auth-brand span { color:var(--cf-muted); font-size:.88rem; }
+        .cf-auth-heading { margin:0 0 .4rem; font-size:clamp(2rem,3vw,2.7rem); }
+        .cf-auth-copy { max-width:34rem; margin:0 0 1.5rem; color:var(--cf-muted); }
+        .cf-auth-art { min-height:690px; display:flex; flex-direction:column; justify-content:flex-end; padding:clamp(1.5rem,4vw,3.2rem); border-radius:18px; color:#fff; background-position:center; background-size:cover; box-shadow:0 20px 55px rgba(15,23,42,.18); }
+        .cf-auth-art h2 { max-width:30rem; margin:0 0 .7rem; color:#fff; font-size:clamp(1.8rem,3vw,2.8rem); }
+        .cf-auth-art p { max-width:32rem; margin:0; color:rgba(255,255,255,.78); font-size:1rem; }
+        .cf-dashboard-hero,.cf-feature-hero { position:relative; min-height:250px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; padding:clamp(1.6rem,3vw,2.5rem); margin:0 0 2rem; border:1px solid rgba(255,255,255,.14); border-radius:16px; color:#fff; background-position:center; background-size:cover; box-shadow:0 12px 34px rgba(15,23,42,.14); }
+        .cf-dashboard-hero::before,.cf-feature-hero::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(5,12,28,.94),rgba(5,12,28,.72) 48%,rgba(5,12,28,.18)); }
+        .cf-dashboard-hero>*,.cf-feature-hero>* { position:relative; z-index:1; max-width:680px; }
+        .cf-dashboard-hero h1,.cf-feature-hero h1 { margin:0 0 .55rem; color:#fff; font-size:clamp(2rem,3.5vw,3.1rem); }
+        .cf-dashboard-hero p,.cf-feature-hero p { margin:0; color:rgba(255,255,255,.78); font-size:1.02rem; }
+        .cf-page-eyebrow { margin-bottom:.6rem; color:#7dd3fc; font-size:.75rem; font-weight:750; letter-spacing:.13em; text-transform:uppercase; }
+        .cf-feature-title { display:block; margin:0; }
+        .cf-feature-icon,.cf-back-label { display:none; }
+        .cf-section-heading { margin:.2rem 0 1.3rem; }
+        .cf-section-heading h2 { margin:0 0 .25rem; font-size:1.55rem; }
+        .cf-section-heading p { margin:0; }
+        .cf-card-index { display:inline-flex; align-items:center; justify-content:center; width:2rem; height:2rem; margin-bottom:.55rem; border-radius:8px; background:#10264d; color:#7dd3fc; font-size:.75rem; font-weight:800; }
+        .cf-sidebar-user { margin:.6rem 0 1rem; padding:.9rem 1rem; border:1px solid var(--cf-line); border-radius:10px; background:#0b1730; }
+        @media(max-width:800px) { .block-container{padding-top:1.2rem}.cf-auth-art{min-height:360px}.cf-dashboard-hero,.cf-feature-hero{min-height:220px} }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def apply_landing_styles():
+    """Apply styles used only by the public landing page."""
+
+    st.markdown(
+        """
+        <style>
+        .block-container {
+            width: 100%;
+            max-width: none;
+            padding: 1.25rem clamp(1rem, 3.5vw, 4.5rem) 4rem;
+        }
+
+        .cf-site-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 0 0 1.15rem;
+            padding: 0.8rem 0;
+        }
+
+        .cf-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            color: #e6f4ff;
+            font-size: 1.18rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .cf-brand-mark {
+            display: grid;
+            place-items: center;
+            width: 2.35rem;
+            height: 2.35rem;
+            color: white;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #22d3ee);
+            box-shadow: 0 9px 22px rgba(37, 99, 235, 0.28);
+        }
+
+        .cf-nav-note {
+            color: #8fafc8;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .cf-landing-hero {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: min(680px, 72vh);
+            overflow: hidden;
+            padding: clamp(2.4rem, 6vw, 6.5rem);
+            color: white;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 28px;
+            background-position: center;
+            background-size: cover;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.24);
+        }
+
+        .cf-landing-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                90deg,
+                rgba(2, 6, 23, 0.12),
+                transparent 58%
+            );
+        }
+
+        .cf-landing-copy {
+            position: relative;
+            z-index: 1;
+            width: min(720px, 54%);
+        }
+
+        .cf-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.48rem 0.75rem;
+            margin-bottom: 1.2rem;
+            color: #93c5fd;
+            border: 1px solid rgba(125, 211, 252, 0.28);
+            border-radius: 999px;
+            background: rgba(30, 64, 175, 0.22);
+            font-size: 0.76rem;
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            backdrop-filter: blur(12px);
+        }
+
+        .cf-kicker-dot {
+            width: 0.48rem;
+            height: 0.48rem;
+            border-radius: 50%;
+            background: #38bdf8;
+            box-shadow: 0 0 16px #38bdf8;
+        }
+
+        .cf-landing-hero h1 {
+            max-width: 680px;
+            margin: 0 0 1.25rem;
+            color: white;
+            font-size: clamp(2.65rem, 5.5vw, 5rem);
+            line-height: 0.98;
+            letter-spacing: -0.055em;
+        }
+
+        .cf-gradient-word {
+            color: #7dd3fc;
+            background: linear-gradient(90deg, #60a5fa, #22d3ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cf-landing-hero p {
+            max-width: 580px;
+            margin: 0;
+            color: rgba(226, 232, 240, 0.88);
+            font-size: clamp(1rem, 1.6vw, 1.18rem);
+            line-height: 1.75;
+        }
+
+        .cf-hero-proof {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.2rem;
+            margin-top: 1.6rem;
+            color: rgba(226, 232, 240, 0.82);
+            font-size: 0.88rem;
+            font-weight: 650;
+        }
+
+        .cf-hero-proof span::before {
+            content: "✓";
+            margin-right: 0.38rem;
+            color: #67e8f9;
+        }
+
+        .cf-cta-row {
+            padding: 1.05rem 0 0.65rem;
+        }
+
+        .cf-section {
+            width: 100%;
+            padding: clamp(4rem, 7vw, 7rem) 0 0;
+        }
+
+        .cf-section-heading {
+            max-width: 720px;
+            margin: 0 auto 2.3rem;
+            text-align: center;
+        }
+
+        .cf-section-heading small {
+            color: #38bdf8;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .cf-section-heading h2 {
+            margin: 0.65rem 0 0.8rem;
+            color: #e6f4ff;
+            font-size: clamp(2rem, 4vw, 3.1rem);
+            line-height: 1.08;
+        }
+
+        .cf-section-heading p {
+            margin: 0;
+            color: #8fafc8;
+            font-size: 1.03rem;
+            line-height: 1.7;
+        }
+
+        .cf-feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .cf-web-card {
+            min-height: 220px;
+            padding: clamp(1.35rem, 2.3vw, 2rem);
+            border: 1px solid #1b365d;
+            border-radius: 20px;
+            background: rgba(11, 23, 48, 0.78);
+            box-shadow: 0 12px 38px rgba(0, 0, 0, 0.16);
+            transition: transform 180ms ease, box-shadow 180ms ease,
+                border-color 180ms ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .cf-web-card:hover {
+            transform: translateY(-5px);
+            border-color: #38bdf8;
+            box-shadow: 0 20px 48px rgba(56, 189, 248, 0.14);
+        }
+
+        .cf-card-icon {
+            display: grid;
+            place-items: center;
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1.15rem;
+            border-radius: 14px;
+            background: linear-gradient(145deg, #10264d, #0b2f57);
+            font-size: 1.35rem;
+        }
+
+        .cf-web-card h3 {
+            margin: 0 0 0.55rem;
+            color: #e6f4ff;
+            font-size: 1.08rem;
+        }
+
+        .cf-web-card p {
+            margin: 0;
+            color: #8fafc8;
+            line-height: 1.65;
+        }
+
+        .cf-steps {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.1rem;
+        }
+
+        .cf-step {
+            position: relative;
+            min-height: 230px;
+            padding: clamp(1.5rem, 2.5vw, 2.2rem);
+            overflow: hidden;
+            border-radius: 22px;
+            background: #0b1730;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+        }
+
+        .cf-step-number {
+            display: inline-grid;
+            place-items: center;
+            width: 2.3rem;
+            height: 2.3rem;
+            margin-bottom: 1.4rem;
+            color: #030b1a;
+            border-radius: 50%;
+            background: #38bdf8;
+            font-weight: 850;
+        }
+
+        .cf-step h3 {
+            margin: 0 0 0.55rem;
+            color: white;
+        }
+
+        .cf-step p {
+            margin: 0;
+            color: #8fafc8;
+            line-height: 1.65;
+        }
+
+        @media (max-width: 900px) {
+            .cf-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .cf-landing-copy { width: 70%; }
+            .cf-landing-hero {
+                min-height: 570px;
+                background-position: 58% center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .block-container { padding: 1rem 1rem 3rem; }
+
+            .cf-site-nav {
+                align-items: flex-start;
+                margin-top: 0;
+            }
+
+            .cf-nav-note { display: none; }
+
+            .cf-landing-hero {
+                min-height: 620px;
+                padding: 2rem 1.35rem;
+                border-radius: 22px;
+                background-position: 64% center;
+            }
+
+            .cf-landing-hero::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: rgba(2, 6, 23, 0.48);
+            }
+
+            .cf-landing-copy { width: 100%; }
+            .cf-landing-hero h1 { font-size: clamp(2.55rem, 14vw, 4rem); }
+            .cf-feature-grid, .cf-steps { grid-template-columns: 1fr; }
+            .cf-web-card { min-height: auto; }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def initialize_app_state():
     """Initialize the database and base Streamlit session."""
 
@@ -385,6 +816,7 @@ def initialize_app_state():
     defaults = {
         "authenticated": False,
         "current_user": None,
+        "public_page": "landing",
         "auth_page": "login",
         "current_page": "dashboard",
     }
@@ -444,8 +876,170 @@ def clear_user_state():
 
     st.session_state.authenticated = False
     st.session_state.current_user = None
+    st.session_state.public_page = "landing"
     st.session_state.auth_page = "login"
     st.session_state.current_page = "dashboard"
+
+
+def open_auth_page(page_name):
+    """Open the login or account-registration page."""
+
+    st.session_state.public_page = "auth"
+    st.session_state.auth_page = page_name
+    st.rerun()
+
+
+def render_landing_page():
+    """Render the public CareerForge marketing landing page."""
+
+    hero_image = image_data_uri(HERO_IMAGE_PATH)
+
+    st.markdown(
+        """
+        <div class="cf-site-nav">
+            <div class="cf-brand">
+                <span class="cf-brand-mark">CF</span>
+                <span>CareerForge</span>
+            </div>
+            <div class="cf-nav-note">
+                AI-powered career planning, built around your skills
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <section
+            class="cf-landing-hero"
+            style="background-image:
+                linear-gradient(
+                    90deg,
+                    rgba(2, 6, 23, 0.98) 0%,
+                    rgba(2, 6, 23, 0.88) 34%,
+                    rgba(2, 6, 23, 0.24) 64%,
+                    rgba(2, 6, 23, 0.08) 100%
+                ),
+                url('{hero_image}');"
+        >
+            <div class="cf-landing-copy">
+                <div class="cf-kicker">
+                    <span class="cf-kicker-dot"></span>
+                    Your personalized career intelligence
+                </div>
+                <h1>
+                    Turn your skills into a
+                    <span class="cf-gradient-word">clear career path.</span>
+                </h1>
+                <p>
+                    Discover careers that fit you, understand the skills
+                    you are missing, and follow a practical roadmap built
+                    around your goals and available time.
+                </p>
+                <div class="cf-hero-proof">
+                    <span>Personalized matches</span>
+                    <span>Actionable skill gaps</span>
+                    <span>Progress that stays saved</span>
+                </div>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="cf-cta-row"></div>',
+        unsafe_allow_html=True,
+    )
+    primary, secondary, spacer = st.columns([1.2, 1, 3.8])
+
+    with primary:
+        if st.button(
+            "Start My Career Plan",
+            type="primary",
+            use_container_width=True,
+        ):
+            open_auth_page("register")
+
+    with secondary:
+        if st.button(
+            "Sign In",
+            use_container_width=True,
+        ):
+            open_auth_page("login")
+
+    st.markdown(
+        """
+        <section class="cf-section">
+            <div class="cf-section-heading">
+                <small>One workspace, six focused tools</small>
+                <h2>Everything you need to move from uncertainty to action.</h2>
+                <p>
+                    CareerForge combines explainable matching, planning,
+                    simulation, and progress tracking in one practical workspace.
+                </p>
+            </div>
+            <div class="cf-feature-grid">
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">◎</div>
+                    <h3>Career Overview</h3>
+                    <p>See ranked career matches with transparent scores for skills and interests.</p>
+                </article>
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">◈</div>
+                    <h3>Skill-Gap Analysis</h3>
+                    <p>Know exactly which skills need attention and how far you are from each target.</p>
+                </article>
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">↗</div>
+                    <h3>Learning Roadmap</h3>
+                    <p>Turn skill gaps into an ordered learning path that fits your weekly schedule.</p>
+                </article>
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">◇</div>
+                    <h3>What-If Simulator</h3>
+                    <p>Preview how improving one skill can change your scores and career rankings.</p>
+                </article>
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">⇄</div>
+                    <h3>Career Comparison</h3>
+                    <p>Compare two paths side by side using the metrics that matter most.</p>
+                </article>
+                <article class="cf-web-card">
+                    <div class="cf-card-icon">✓</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Save completed steps, update your profile, and continue from any device.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="cf-section">
+            <div class="cf-section-heading">
+                <small>How it works</small>
+                <h2>A smarter career plan in three simple steps.</h2>
+            </div>
+            <div class="cf-steps">
+                <article class="cf-step">
+                    <span class="cf-step-number">1</span>
+                    <h3>Build your profile</h3>
+                    <p>Add your current skills, interests, project experience, and study time.</p>
+                </article>
+                <article class="cf-step">
+                    <span class="cf-step-number">2</span>
+                    <h3>Explore your fit</h3>
+                    <p>Review explainable career matches, readiness, and priority skill gaps.</p>
+                </article>
+                <article class="cf-step">
+                    <span class="cf-step-number">3</span>
+                    <h3>Follow your roadmap</h3>
+                    <p>Complete learning steps and watch your career readiness improve over time.</p>
+                </article>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_login_page():
@@ -454,6 +1048,15 @@ def render_login_page():
     st.title("CareerForge")
     st.caption("AI Career and Skill-Gap Planner")
     st.subheader("Login")
+    st.markdown(
+        """
+        <p class="cf-auth-copy">
+            Welcome back. Sign in to continue your career plan,
+            review your progress, and explore your next best move.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.form("login_form"):
         username = st.text_input(
@@ -498,13 +1101,30 @@ def render_login_page():
         st.session_state.auth_page = "register"
         st.rerun()
 
+    if st.button(
+        "← Back to Home",
+        key="login_back_to_home",
+        use_container_width=True,
+    ):
+        st.session_state.public_page = "landing"
+        st.rerun()
+
 
 def render_register_page():
     """Render and process the registration form."""
 
     st.title("CareerForge")
-    st.caption("Create your CareerForge account")
+    st.caption("AI Career and Skill-Gap Planner")
     st.subheader("Register")
+    st.markdown(
+        """
+        <p class="cf-auth-copy">
+            Create your account and set up a private workspace for
+            your skills, career matches, roadmap, and learning progress.
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.form("register_form"):
         username = st.text_input(
@@ -552,9 +1172,9 @@ def render_register_page():
 def render_authentication():
     """Render the selected authentication screen."""
 
-    left, center, right = st.columns([1, 1.4, 1])
+    form_column, art_column = st.columns([0.82, 1.18], gap="large")
 
-    with center:
+    with form_column:
         notice = st.session_state.pop(
             "auth_notice",
             None,
@@ -569,6 +1189,25 @@ def render_authentication():
             render_register_page()
         else:
             render_login_page()
+
+    with art_column:
+        page_name = st.session_state.auth_page
+        artwork = image_data_uri(AUTH_BACKGROUND_PATHS[page_name])
+        if page_name == "register":
+            art_title = "Build a plan around the skills you already have."
+            art_copy = "Create your profile once, then use explainable matching, skill-gap analysis, and a practical roadmap in one workspace."
+        else:
+            art_title = "Your next career move, made clearer."
+            art_copy = "Return to your personalized recommendations, learning plan, and saved progress from any device."
+
+        st.markdown(
+            f"""
+            <div class="cf-auth-art" style="background-image:linear-gradient(180deg,rgba(5,12,28,.05),rgba(5,12,28,.92)),url('{artwork}');">
+                <h2>{art_title}</h2><p>{art_copy}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_account_sidebar(username):
@@ -752,9 +1391,11 @@ def render_dashboard(username):
     """Render six feature cards on the main dashboard."""
 
     safe_username = html.escape(username)
+    artwork = image_data_uri(PAGE_BACKGROUND_PATHS["dashboard"])
     st.markdown(
         f"""
-        <div class="cf-hero">
+        <div class="cf-dashboard-hero" style="background-image:linear-gradient(90deg,rgba(5,12,28,.12),rgba(5,12,28,.04)),url('{artwork}');">
+            <div class="cf-page-eyebrow">Personal career workspace</div>
             <h1>Welcome back, {safe_username}</h1>
             <p>
                 Build your career direction with personalized AI
@@ -764,25 +1405,27 @@ def render_dashboard(username):
         """,
         unsafe_allow_html=True,
     )
-    st.subheader("Career Planning Workspace")
-    st.caption(
-        "Select a feature below to open its dedicated workspace."
+    st.markdown(
+        """<div class="cf-section-heading"><h2>Career planning workspace</h2><p>Select a tool to open its dedicated workspace.</p></div>""",
+        unsafe_allow_html=True,
     )
 
     page_items = list(FEATURE_PAGES.items())
 
-    for row_start in range(0, len(page_items), 2):
-        columns = st.columns(2)
+    for row_start in range(0, len(page_items), 3):
+        columns = st.columns(3)
 
-        for column, (page_name, page) in zip(
+        for card_offset, (column, (page_name, page)) in enumerate(zip(
             columns,
-            page_items[row_start:row_start + 2],
-        ):
+            page_items[row_start:row_start + 3],
+        )):
             with column:
                 with st.container(border=True):
-                    st.subheader(
-                        f"{page['icon']} {page['title']}"
+                    st.markdown(
+                        f'<span class="cf-card-index">{row_start + card_offset + 1:02d}</span>',
+                        unsafe_allow_html=True,
                     )
+                    st.subheader(page["title"])
                     st.write(page["description"])
                     st.write("")
 
@@ -799,33 +1442,27 @@ def render_feature_header(page_name):
 
     page = FEATURE_PAGES[page_name]
 
-    st.markdown(
-        '<div class="cf-back-label">Navigation</div>',
-        unsafe_allow_html=True,
-    )
     back_column, _ = st.columns([1.45, 5])
 
     with back_column:
         if st.button(
             "← Dashboard",
             key=f"back_{page_name}",
-            type="primary",
             use_container_width=True,
         ):
             open_feature_page("dashboard")
 
     safe_title = html.escape(page["title"])
     safe_description = html.escape(page["description"])
-    safe_icon = html.escape(page["icon"])
+    artwork = image_data_uri(PAGE_BACKGROUND_PATHS[page_name])
 
     st.markdown(
         f"""
-        <div class="cf-feature-hero">
+        <div class="cf-feature-hero" style="background-image:linear-gradient(90deg,rgba(5,12,28,.15),rgba(5,12,28,.04)),url('{artwork}');">
             <div class="cf-page-eyebrow">
                 CareerForge Workspace
             </div>
             <div class="cf-feature-title">
-                <div class="cf-feature-icon">{safe_icon}</div>
                 <h1>{safe_title}</h1>
             </div>
             <p>{safe_description}</p>
@@ -870,7 +1507,7 @@ def render_overview(analysis):
     st.subheader("Top Career Matches")
     st.bar_chart(
         chart_data,
-        color="#4f46e5",
+        color="#38bdf8",
     )
 
     recommendation_rows = [
@@ -1227,10 +1864,16 @@ def main():
     initialize_app_state()
 
     if not st.session_state.authenticated:
-        render_authentication()
+        if st.session_state.public_page == "landing":
+            apply_landing_styles()
+            render_landing_page()
+        else:
+            apply_workspace_styles()
+            render_authentication()
         return
 
     username = st.session_state.current_user
+    apply_workspace_styles()
     initialize_user_state(username)
 
     careers = load_json(CAREERS_PATH)
