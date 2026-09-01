@@ -31,6 +31,7 @@ def test_register_and_login_user(tmp_path):
 
     registration = register_user(
         "Alice_01",
+        "alice@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,
@@ -43,6 +44,7 @@ def test_register_and_login_user(tmp_path):
 
     assert registration["success"] is True
     assert registration["user"]["username"] == "alice_01"
+    assert registration["user"]["email"] == "alice@example.com"
     assert login["success"] is True
     assert login["user"]["username"] == "alice_01"
 
@@ -52,12 +54,14 @@ def test_duplicate_username_is_rejected(tmp_path):
 
     first = register_user(
         "career_user",
+        "career@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,
     )
     duplicate = register_user(
         "CAREER_USER",
+        "another@example.com",
         "AnotherPassword123!",
         "AnotherPassword123!",
         database_path,
@@ -70,11 +74,59 @@ def test_duplicate_username_is_rejected(tmp_path):
     }
 
 
+def test_duplicate_email_is_rejected_and_email_login_works(tmp_path):
+    database_path = tmp_path / "careerforge.db"
+
+    first = register_user(
+        "email_user",
+        "User@Example.com",
+        VALID_PASSWORD,
+        VALID_PASSWORD,
+        database_path,
+    )
+    duplicate = register_user(
+        "different_user",
+        "user@example.com",
+        VALID_PASSWORD,
+        VALID_PASSWORD,
+        database_path,
+    )
+    login = login_user(
+        "USER@example.com",
+        VALID_PASSWORD,
+        database_path,
+    )
+
+    assert first["success"] is True
+    assert duplicate == {
+        "success": False,
+        "message": "Email already exists.",
+    }
+    assert login["success"] is True
+    assert login["user"]["username"] == "email_user"
+
+
+def test_invalid_email_is_rejected(tmp_path):
+    result = register_user(
+        "email_user",
+        "not-an-email",
+        VALID_PASSWORD,
+        VALID_PASSWORD,
+        tmp_path / "careerforge.db",
+    )
+
+    assert result == {
+        "success": False,
+        "message": "Enter a valid email address.",
+    }
+
+
 def test_wrong_password_and_unknown_user_are_rejected(tmp_path):
     database_path = tmp_path / "careerforge.db"
 
     register_user(
         "student",
+        "student@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,
@@ -103,18 +155,21 @@ def test_registration_validates_input(tmp_path):
 
     invalid_username = register_user(
         "a!",
+        "invalid@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,
     )
     weak_password = register_user(
         "valid_user",
+        "weak@example.com",
         "short",
         "short",
         database_path,
     )
     mismatch = register_user(
         "valid_user",
+        "mismatch@example.com",
         VALID_PASSWORD,
         "DifferentPassword123!",
         database_path,
@@ -133,12 +188,14 @@ def test_password_is_salted_and_not_stored_as_plaintext(tmp_path):
 
     register_user(
         "user_one",
+        "one@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,
     )
     register_user(
         "user_two",
+        "two@example.com",
         VALID_PASSWORD,
         VALID_PASSWORD,
         database_path,

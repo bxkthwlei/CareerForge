@@ -863,6 +863,7 @@ def clear_user_state():
         "login_username",
         "login_password",
         "register_username",
+        "register_email",
         "register_password",
         "register_confirm_password",
     }
@@ -1059,8 +1060,8 @@ def render_login_page():
     )
 
     with st.form("login_form"):
-        username = st.text_input(
-            "Username",
+        identifier = st.text_input(
+            "Username or email",
             key="login_username",
         )
         password = st.text_input(
@@ -1075,7 +1076,7 @@ def render_login_page():
 
     if submitted:
         result = login_user(
-            username,
+            identifier,
             password,
             DATABASE_PATH,
         )
@@ -1131,6 +1132,10 @@ def render_register_page():
             "Username",
             key="register_username",
         )
+        email = st.text_input(
+            "Email",
+            key="register_email",
+        )
         password = st.text_input(
             "Password",
             type="password",
@@ -1149,6 +1154,7 @@ def render_register_page():
     if submitted:
         result = register_user(
             username,
+            email,
             password,
             confirm_password,
             DATABASE_PATH,

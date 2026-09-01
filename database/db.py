@@ -22,6 +22,7 @@ from sqlalchemy import (
     create_engine,
     delete,
     insert,
+    inspect,
     select,
     text,
     update,
@@ -39,6 +40,7 @@ users = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("username", String(30), nullable=False),
+    Column("email", String(254), nullable=True),
     Column("password_hash", Text, nullable=False),
     Column("password_salt", Text, nullable=False),
     Column(
@@ -48,6 +50,7 @@ users = Table(
         server_default=text("CURRENT_TIMESTAMP"),
     ),
     UniqueConstraint("username", name="uq_users_username"),
+    UniqueConstraint("email", name="uq_users_email"),
 )
 
 profiles = Table(
@@ -195,11 +198,30 @@ def _get_engine(database_target=None):
 def initialize_database(database_target=None):
     """Create the required database tables."""
 
-    metadata.create_all(_get_engine(database_target))
+    engine = _get_engine(database_target)
+    metadata.create_all(engine)
+
+    # ``create_all`` does not alter an existing table. Add the nullable email
+    # column in place so deployed accounts created before this update remain
+    # valid, then enforce uniqueness for every non-null email address.
+    with engine.begin() as connection:
+        existing_columns = {
+            column["name"]
+            for column in inspect(connection).get_columns("users")
+        }
+        if "email" not in existing_columns:
+            connection.exec_driver_sql(
+                "ALTER TABLE users ADD COLUMN email VARCHAR(254)"
+            )
+        connection.exec_driver_sql(
+            "CREATE UNIQUE INDEX IF NOT EXISTS "
+            "uq_users_email ON users (email)"
+        )
 
 
 def create_user(
     username,
+    email,
     password_hash,
     password_salt,
     db_path=None,
@@ -207,6 +229,9 @@ def create_user(
     """Store a new user account and return its ID."""
 
     _validate_username(username)
+
+    if not isinstance(email, str) or not email.strip():
+        raise ValueError("email must be a non-empty string")
 
     if not isinstance(password_hash, str) or not password_hash:
         raise ValueError("password_hash must be a non-empty string")
@@ -216,6 +241,7 @@ def create_user(
 
     initialize_database(db_path)
     normalized_username = username.strip().lower()
+    normalized_email = email.strip().lower()
     engine = _get_engine(db_path)
 
     try:
@@ -223,13 +249,14 @@ def create_user(
             result = connection.execute(
                 insert(users).values(
                     username=normalized_username,
+                    email=normalized_email,
                     password_hash=password_hash,
                     password_salt=password_salt,
                 )
             )
             return result.inserted_primary_key[0]
     except IntegrityError as error:
-        raise ValueError("username already exists") from error
+        raise ValueError("username or email already exists") from error
 
 
 def get_user_by_username(username, db_path=None):
@@ -242,10 +269,34 @@ def get_user_by_username(username, db_path=None):
     statement = select(
         users.c.id,
         users.c.username,
+        users.c.email,
         users.c.password_hash,
         users.c.password_salt,
         users.c.created_at,
     ).where(users.c.username == normalized_username)
+
+    with _get_engine(db_path).connect() as connection:
+        row = connection.execute(statement).mappings().first()
+
+    return dict(row) if row is not None else None
+
+
+def get_user_by_email(email, db_path=None):
+    """Return a stored user account by email address or None."""
+
+    if not isinstance(email, str) or not email.strip():
+        raise ValueError("email must be a non-empty string")
+
+    initialize_database(db_path)
+    normalized_email = email.strip().lower()
+    statement = select(
+        users.c.id,
+        users.c.username,
+        users.c.email,
+        users.c.password_hash,
+        users.c.password_salt,
+        users.c.created_at,
+    ).where(users.c.email == normalized_email)
 
     with _get_engine(db_path).connect() as connection:
         row = connection.execute(statement).mappings().first()

@@ -7,6 +7,7 @@ import secrets
 
 from database.db import (
     create_user,
+    get_user_by_email,
     get_user_by_username,
 )
 
@@ -16,7 +17,12 @@ SALT_BYTES = 16
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_]{3,30}$")
-INVALID_LOGIN_MESSAGE = "Invalid username or password."
+EMAIL_PATTERN = re.compile(
+    r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+    r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+    r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$"
+)
+INVALID_LOGIN_MESSAGE = "Invalid username/email or password."
 
 
 def normalize_username(username):
@@ -63,6 +69,23 @@ def validate_password(password):
     if not password.strip():
         return "Password cannot contain only spaces."
 
+    return None
+
+
+def normalize_email(email):
+    """Return the canonical lowercase email address."""
+
+    if not isinstance(email, str):
+        return ""
+    return email.strip().lower()
+
+
+def validate_email(email):
+    """Validate an email address and return an error message or None."""
+
+    normalized = normalize_email(email)
+    if len(normalized) > 254 or not EMAIL_PATTERN.fullmatch(normalized):
+        return "Enter a valid email address."
     return None
 
 
@@ -130,6 +153,7 @@ def verify_password(
 
 def register_user(
     username,
+    email,
     password,
     confirm_password,
     db_path,
@@ -137,6 +161,7 @@ def register_user(
     """Validate and create a CareerForge user account."""
 
     normalized = normalize_username(username)
+    normalized_email = normalize_email(email)
     username_error = validate_username(normalized)
 
     if username_error:
@@ -144,6 +169,10 @@ def register_user(
             "success": False,
             "message": username_error,
         }
+
+    email_error = validate_email(normalized_email)
+    if email_error:
+        return {"success": False, "message": email_error}
 
     password_error = validate_password(password)
 
@@ -165,19 +194,30 @@ def register_user(
             "message": "Username already exists.",
         }
 
+    if get_user_by_email(normalized_email, db_path) is not None:
+        return {
+            "success": False,
+            "message": "Email already exists.",
+        }
+
     password_hash, password_salt = hash_password(password)
 
     try:
         user_id = create_user(
             normalized,
+            normalized_email,
             password_hash,
             password_salt,
             db_path,
         )
-    except ValueError:
+    except ValueError as error:
         return {
             "success": False,
-            "message": "Username already exists.",
+            "message": (
+                "Email already exists."
+                if "email" in str(error).lower()
+                else "Username already exists."
+            ),
         }
 
     return {
@@ -186,14 +226,19 @@ def register_user(
         "user": {
             "id": user_id,
             "username": normalized,
+            "email": normalized_email,
         },
     }
 
 
-def login_user(username, password, db_path):
+def login_user(identifier, password, db_path):
     """Authenticate a CareerForge user account."""
 
-    normalized = normalize_username(username)
+    normalized = (
+        normalize_email(identifier)
+        if isinstance(identifier, str) and "@" in identifier
+        else normalize_username(identifier)
+    )
 
     if not normalized or not isinstance(password, str):
         return {
@@ -201,7 +246,11 @@ def login_user(username, password, db_path):
             "message": INVALID_LOGIN_MESSAGE,
         }
 
-    user = get_user_by_username(normalized, db_path)
+    user = (
+        get_user_by_email(normalized, db_path)
+        if "@" in normalized
+        else get_user_by_username(normalized, db_path)
+    )
 
     if user is None or not verify_password(
         password,
@@ -219,6 +268,7 @@ def login_user(username, password, db_path):
         "user": {
             "id": user["id"],
             "username": user["username"],
+            "email": user.get("email"),
             "created_at": user["created_at"],
         },
     }

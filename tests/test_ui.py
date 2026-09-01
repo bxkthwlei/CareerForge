@@ -45,6 +45,7 @@ def authenticated_app(tmp_path, monkeypatch):
     )
     registration = register_user(
         "test_user",
+        "test@example.com",
         TEST_PASSWORD,
         TEST_PASSWORD,
         database_path,
@@ -58,7 +59,7 @@ def authenticated_app(tmp_path, monkeypatch):
     ).click().run(timeout=30)
     find_by_label(
         app.text_input,
-        "Username",
+        "Username or email",
     ).set_value("test_user")
     find_by_label(
         app.text_input,
@@ -127,7 +128,7 @@ def test_sign_in_opens_login_screen(tmp_path, monkeypatch):
     assert app.subheader[0].value == "Login"
 
     input_labels = {item.label for item in app.text_input}
-    assert {"Username", "Password"}.issubset(input_labels)
+    assert {"Username or email", "Password"}.issubset(input_labels)
     assert "← Back to Home" in {
         item.label
         for item in app.button
@@ -179,6 +180,7 @@ def test_register_screen_renders(tmp_path, monkeypatch):
     }
     assert {
         "Username",
+        "Email",
         "Password",
         "Confirm password",
     }.issubset(input_labels)
